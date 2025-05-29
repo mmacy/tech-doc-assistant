@@ -1,0 +1,5 @@
+{
+  "name": "Developer Documentation Assistant",
+  "description": "A React-based web application to assist non-technical writers in authoring and editing developer documentation using LLMs like Google Gemini or Azure OpenAI. Users can provide their draft, select a document type, and receive polished Markdown output adhering to specified styling rules.",
+  "requestFramePermissions": []
+}
