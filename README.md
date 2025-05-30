@@ -115,7 +115,7 @@ OPENAI_MODEL_NAME=gpt-4o-mini # Optional: Overrides the default model if specifi
 
 **Note**:
 
-- NEVER commity the `.env.local` file source control.
+- NEVER commit the `.env.local` file source control.
 - If you provide an API key in the UI's settings, that key will override the corresponding environment variable for that session.
 
 ### Running the development server
