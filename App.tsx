@@ -8,11 +8,11 @@ import Button from './components/Button';
 import MarkdownDisplay from './components/MarkdownDisplay';
 import SettingsModal from './components/SettingsModal';
 import { generateDocumentation as llmGenerateDocumentation } from './services/llmService';
-import { 
-  getMarkdownStyleGuide, 
+import {
+  getMarkdownStyleGuide,
   getGeneralWritingStyleGuide,
   getDocumentTemplate,
-  getDocumentDescription 
+  getDocumentDescription
 } from './services/contentService';
 
 const SettingsIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -81,7 +81,7 @@ Generate a complete and polished document in Markdown format.
 4.  **Incorporate User Draft:** Integrate the "USER'S DRAFT CONTENT" into the appropriate sections of the template.
 5.  **Apply Additional Instructions:** Consider any "USER'S ADDITIONAL INSTRUCTIONS".
 6.  **Fill Placeholders:** Replace placeholders like \`{{TITLE}}\`, \`{{CONCEPT_NAME}}\`, etc., in the template with relevant information derived from the user's draft or instructions. If information is missing, make reasonable inferences or state that information is needed.
-7.  **Output Format:** The entire output MUST be in valid Markdown. Do not include any conversational text before or after the Markdown document.
+7.  **Output Format:** The entire output MUST be in valid Markdown. Do not include any conversational text before or after the Markdown document, nor enclose the output in \`\`\`markdown\`\`\` tags.
 
 ---
 **DOCUMENT TYPE DESCRIPTION: ${selectedDocType.name}**
@@ -135,7 +135,7 @@ Now, generate the complete Markdown document based on all the above information.
       setIsLoading(false);
       return;
     }
-    
+
     const llmOptions: LlmServiceOptions = {
       useGrounding: selectedLlmProvider === LlmProvider.GEMINI && useGrounding,
     };
@@ -170,7 +170,7 @@ Now, generate the complete Markdown document based on all the above information.
       setIsLoading(false);
     }
   };
-  
+
   const getFileName = () => {
     const docType = DOCUMENT_TYPES.find(dt => dt.id === selectedDocumentTypeId)?.name || 'document';
     return `${docType.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.md`;
@@ -181,7 +181,7 @@ Now, generate the complete Markdown document based on all the above information.
     setAzureOpenaiEndpoint('');
     setAzureOpenaiDeploymentName('');
     setOpenaiModelName('');
-    setUseGrounding(false); 
+    setUseGrounding(false);
   }, [selectedLlmProvider]);
 
    useEffect(() => {
@@ -203,7 +203,7 @@ Now, generate the complete Markdown document based on all the above information.
         return changed ? newSettings : prevSettings;
      });
 
-  }, [selectedDocumentTypeId]); 
+  }, [selectedDocumentTypeId]);
 
 
   return (
@@ -229,7 +229,7 @@ Now, generate the complete Markdown document based on all the above information.
                 Settings
             </Button>
           </div>
-          
+
           {DOCUMENT_TYPES.length > 0 ? (
             <SelectInput
               id="documentType"
@@ -264,8 +264,8 @@ Now, generate the complete Markdown document based on all the above information.
             rows={4}
           />
 
-          <Button 
-            onClick={handleGenerate} 
+          <Button
+            onClick={handleGenerate}
             isLoading={isLoading}
             disabled={isLoading || !draftContent.trim() || (DOCUMENT_TYPES.length > 0 && !selectedDocumentTypeId) || DOCUMENT_TYPES.length === 0}
             className="w-full mt-2 text-lg"
@@ -274,7 +274,7 @@ Now, generate the complete Markdown document based on all the above information.
           </Button>
 
           {error && <p className="mt-4 text-sm text-red-400 bg-red-900/30 p-3 rounded-md">{error}</p>}
-        
+
         </section>
 
         <section className="bg-[#152B43] p-6 rounded-xl shadow-2xl md:sticky md:top-8 md:self-start" style={{maxHeight: 'calc(100vh - 4rem)', overflowY: 'auto'}}>
@@ -308,9 +308,9 @@ Now, generate the complete Markdown document based on all the above information.
                   if (source?.uri) {
                     return (
                       <li key={index}>
-                        <a 
-                          href={source.uri} 
-                          target="_blank" 
+                        <a
+                          href={source.uri}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="text-sky-400 hover:text-sky-300 hover:underline"
                           title={source.title || source.uri}
