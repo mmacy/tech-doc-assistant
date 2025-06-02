@@ -1,7 +1,6 @@
-
-import { OpenAIClient, AzureKeyCredential } from "@azure/openai";
+import { AzureOpenAI } from "openai";
 import { LlmService, LlmServiceOptions, LlmServiceResponse } from '../types';
-import { 
+import {
   AZURE_OPENAI_DEFAULT_DEPLOYMENT_NAME,
 } from '../constants';
 
@@ -28,19 +27,27 @@ const azureOpenaiService: LlmService = {
       console.warn(`Azure OpenAI Deployment Name not provided by user or in env. AZURE_OPENAI_DEPLOYMENT_NAME. Using default: ${AZURE_OPENAI_DEFAULT_DEPLOYMENT_NAME}. This may need configuration for your specific Azure resource.`);
     }
 
-    const client = new OpenAIClient(effectiveEndpoint, new AzureKeyCredential(effectiveApiKey));
-    
+    const client = new AzureOpenAI({
+      endpoint: effectiveEndpoint,
+      apiKey: effectiveApiKey,
+      dangerouslyAllowBrowser: true,
+      apiVersion: "2024-12-01-preview" // Use a recent API version
+    });
+
     try {
-      const messages = [{ role: "user", content: prompt }];
+      const messages = [{ role: "user" as const, content: prompt }];
       console.log(`Using Azure OpenAI with: Endpoint='${effectiveEndpoint}', Deployment='${deploymentName}'`);
-      const result = await client.getChatCompletions(deploymentName, messages);
+      const result = await client.chat.completions.create({
+        model: deploymentName,
+        messages: messages,
+      });
 
       const text = result.choices[0]?.message?.content;
       if (typeof text !== 'string') {
         console.error("Azure OpenAI API response.text is not a string:", result);
         throw new Error("Received an unexpected response format from Azure OpenAI API (text was not a string).");
       }
-      return { text }; 
+      return { text };
     } catch (error: any) {
       console.error("Error calling Azure OpenAI API:", error);
       throw new Error(`Azure OpenAI API error: ${error.message || 'Unknown error'}`);

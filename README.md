@@ -73,8 +73,7 @@ This tool is aimed at:
 - **Styling**: Tailwind CSS
 - **LLM SDKs / Libraries**:
    - `@google/genai` for Google Gemini
-   - `@azure/openai` for Azure OpenAI services
-   - `openai` for standard OpenAI services
+   - `openai` (unified package for both standard OpenAI and Azure OpenAI services)
 
 ## Getting started: Running locally
 
