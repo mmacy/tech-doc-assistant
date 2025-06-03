@@ -121,7 +121,7 @@ Explain the mechanics or architecture of the concept. Diagrams or pseudo-code mi
 };
 
 export const DOCUMENT_DESCRIPTIONS: Record<string, string> = {
-  'how-to': "A step-by-step guide to help users accomplish a specific task. Focus on clear instructions and actionable steps.",
+  'how-to': "A step-by-step guide that helps developers complete a specific task. Focus on clear instructions and actionable steps.",
   'concept': "An explanation of a key concept, technology, or architecture. Aim for clarity and understanding of its purpose and mechanics.",
 };
 
