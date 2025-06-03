@@ -310,7 +310,7 @@ Now, generate the complete Markdown document based on the above information.
       <header className="mb-10 text-center">
         <h1 className="text-4xl md:text-5xl font-bold text-sky-400">Tech Doc Assistant</h1>
         <p className="mt-3 text-lg text-[#A0AEC0] max-w-2xl mx-auto">
-          Use AI help you author clear, accurate, and findable tech docs for developers. Select a doc type, provide your draft, and let the LLM handle the rest.
+          Use AI to help you author clear, accurate, and findable tech docs for developers. Select a doc type, provide your draft, and let the LLM handle the rest.
         </p>
       </header>
 
