@@ -50,12 +50,12 @@ const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ markdownContent, file
   return (
     // The parent section in App.tsx now has bg-[#152B43], so this div doesn't need a separate background unless different.
     // If this needs to be distinct from the section's bg, we can add it. For now, assume it inherits or is transparent.
-    <div className="mt-6"> 
+    <div className="mt-6">
       <div className="flex justify-between items-center mb-3">
-        <h3 className="text-xl font-semibold text-sky-400">Generated markdown</h3>
+        <h3 className="text-xl font-semibold text-sky-400">Markdown document</h3>
         <div className="flex space-x-3">
-          <Button 
-            onClick={handleCopyToClipboard} 
+          <Button
+            onClick={handleCopyToClipboard}
             variant="secondary"
             icon={<ClipboardIcon />}
             className="text-sm px-4 py-2"
@@ -63,8 +63,8 @@ const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ markdownContent, file
           >
             {copied ? 'Copied!' : 'Copy'}
           </Button>
-          <Button 
-            onClick={handleDownload} 
+          <Button
+            onClick={handleDownload}
             variant="secondary"
             icon={<ArrowDownTrayIcon />}
             className="text-sm px-4 py-2"

@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { LlmProvider, DocumentType, GroundingChunk, AllDocumentTypeSettings, DocumentTypeSetting, LlmServiceOptions } from './types';
 import { DOCUMENT_TYPES, DEFAULT_AZURE_OPENAI_ENDPOINT_PLACEHOLDER, DEFAULT_AZURE_OPENAI_DEPLOYMENT_NAME_PLACEHOLDER, OPENAI_MODEL_NAME, AZURE_OPENAI_DEFAULT_DEPLOYMENT_NAME } from './constants';
@@ -15,41 +14,161 @@ import {
   getDocumentDescription
 } from './services/contentService';
 
+const LOCAL_STORAGE_SETTINGS_KEY = 'techDocAssistantSettings';
+
+interface PersistedSettings {
+  selectedLlmProvider?: LlmProvider;
+  azureOpenaiEndpoint?: string;
+  azureOpenaiDeploymentName?: string;
+  openaiModelName?: string;
+  selectedDocumentTypeId?: string;
+  useGrounding?: boolean;
+  markdownStyleGuide?: string;
+  generalWritingStyleGuide?: string;
+  documentCustomSettings?: AllDocumentTypeSettings;
+}
+
+const loadPersistedSettings = (): PersistedSettings | null => {
+  const saved = localStorage.getItem(LOCAL_STORAGE_SETTINGS_KEY);
+  if (saved) {
+    try {
+      return JSON.parse(saved) as PersistedSettings;
+    } catch (e) {
+      console.error("Failed to parse settings from localStorage", e);
+      return null;
+    }
+  }
+  return null;
+};
+
 const SettingsIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-5 h-5"}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 0 1 1.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.108 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.11v1.093c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 0 1-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.78.93l-.15.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.149-.894c-.07-.424-.384-.764-.78-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 0 1-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.506-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.11v-1.094c0-.55.398-1.019.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 0 1 .12-1.45l.773-.773a1.125 1.125 0 0 1 1.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.93l.15-.894Z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 0 1 1.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.108 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.11v1.093c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 0 1-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.78.93l-.15.894c-.09.542-.56.94-1.11-.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.149-.894c-.07-.424-.384-.764-.78-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 0 1-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.506-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.11v-1.094c0-.55.398-1.019.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 0 1 .12-1.45l.773-.773a1.125 1.125 0 0 1 1.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.93l.15-.894Z" />
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
   </svg>
 );
 
 const App: React.FC = () => {
+  const [persistedSettingsLoaded, setPersistedSettingsLoaded] = useState(false);
+
   const [selectedLlmProvider, setSelectedLlmProvider] = useState<LlmProvider>(LlmProvider.GEMINI);
-  const [apiKey, setApiKey] = useState<string>('');
   const [azureOpenaiEndpoint, setAzureOpenaiEndpoint] = useState<string>('');
   const [azureOpenaiDeploymentName, setAzureOpenaiDeploymentName] = useState<string>('');
   const [openaiModelName, setOpenaiModelName] = useState<string>('');
+  const [useGrounding, setUseGrounding] = useState<boolean>(false);
+  const [markdownStyleGuide, setMarkdownStyleGuide] = useState<string>('');
+  const [generalWritingStyleGuide, setGeneralWritingStyleGuide] = useState<string>('');
+  const [documentCustomSettings, setDocumentCustomSettings] = useState<AllDocumentTypeSettings>({});
+  const [selectedDocumentTypeId, setSelectedDocumentTypeId] = useState<string>('');
 
-  const [selectedDocumentTypeId, setSelectedDocumentTypeId] = useState<string>(DOCUMENT_TYPES[0]?.id || '');
+  const [apiKey, setApiKey] = useState<string>('');
   const [draftContent, setDraftContent] = useState<string>('');
   const [additionalInstructions, setAdditionalInstructions] = useState<string>('');
   const [generatedMarkdown, setGeneratedMarkdown] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [useGrounding, setUseGrounding] = useState<boolean>(false);
   const [groundingSources, setGroundingSources] = useState<GroundingChunk[]>([]);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(false);
 
-  const [markdownStyleGuide, setMarkdownStyleGuide] = useState<string>(() => getMarkdownStyleGuide());
-  const [generalWritingStyleGuide, setGeneralWritingStyleGuide] = useState<string>(() => getGeneralWritingStyleGuide());
-  const [documentCustomSettings, setDocumentCustomSettings] = useState<AllDocumentTypeSettings>(() => {
-    return DOCUMENT_TYPES.reduce((acc, docType) => {
+  useEffect(() => {
+    const loadedSettings = loadPersistedSettings();
+
+    const defaultDocSettings = DOCUMENT_TYPES.reduce((acc, docType) => {
       acc[docType.id] = {
         template: getDocumentTemplate(docType.id) || '',
         description: getDocumentDescription(docType.id) || '',
       };
       return acc;
     }, {} as AllDocumentTypeSettings);
-  });
+
+    if (loadedSettings) {
+      setSelectedLlmProvider(loadedSettings.selectedLlmProvider || LlmProvider.GEMINI);
+      setAzureOpenaiEndpoint(loadedSettings.azureOpenaiEndpoint || '');
+      setAzureOpenaiDeploymentName(loadedSettings.azureOpenaiDeploymentName || '');
+      setOpenaiModelName(loadedSettings.openaiModelName || '');
+      setUseGrounding(loadedSettings.useGrounding === true);
+
+      setMarkdownStyleGuide(loadedSettings.markdownStyleGuide || getMarkdownStyleGuide());
+      setGeneralWritingStyleGuide(loadedSettings.generalWritingStyleGuide || getGeneralWritingStyleGuide());
+
+      if (loadedSettings.documentCustomSettings) {
+        const mergedSettings = { ...defaultDocSettings };
+        for (const docTypeId in loadedSettings.documentCustomSettings) {
+          if (defaultDocSettings.hasOwnProperty(docTypeId)) {
+            mergedSettings[docTypeId] = {
+              template: loadedSettings.documentCustomSettings[docTypeId]?.template ?? defaultDocSettings[docTypeId].template,
+              description: loadedSettings.documentCustomSettings[docTypeId]?.description ?? defaultDocSettings[docTypeId].description,
+            };
+          }
+        }
+        for (const docType of DOCUMENT_TYPES) {
+            if (!loadedSettings.documentCustomSettings.hasOwnProperty(docType.id)) {
+                mergedSettings[docType.id] = defaultDocSettings[docType.id];
+            }
+        }
+        setDocumentCustomSettings(mergedSettings);
+      } else {
+        setDocumentCustomSettings(defaultDocSettings);
+      }
+
+      const initialDocTypeId = loadedSettings.selectedDocumentTypeId;
+      if (initialDocTypeId && DOCUMENT_TYPES.find(dt => dt.id === initialDocTypeId)) {
+        setSelectedDocumentTypeId(initialDocTypeId);
+      } else if (DOCUMENT_TYPES.length > 0) {
+        setSelectedDocumentTypeId(DOCUMENT_TYPES[0].id);
+      } else {
+        setSelectedDocumentTypeId('');
+      }
+    } else {
+      setSelectedLlmProvider(LlmProvider.GEMINI);
+      setAzureOpenaiEndpoint('');
+      setAzureOpenaiDeploymentName('');
+      setOpenaiModelName('');
+      setUseGrounding(false);
+      setMarkdownStyleGuide(getMarkdownStyleGuide());
+      setGeneralWritingStyleGuide(getGeneralWritingStyleGuide());
+      setDocumentCustomSettings(defaultDocSettings);
+      if (DOCUMENT_TYPES.length > 0) {
+        setSelectedDocumentTypeId(DOCUMENT_TYPES[0].id);
+      } else {
+        setSelectedDocumentTypeId('');
+      }
+    }
+    setPersistedSettingsLoaded(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!persistedSettingsLoaded) return;
+
+    const settingsToSave: PersistedSettings = {
+      selectedLlmProvider,
+      azureOpenaiEndpoint,
+      azureOpenaiDeploymentName,
+      openaiModelName,
+      selectedDocumentTypeId,
+      useGrounding,
+      markdownStyleGuide,
+      generalWritingStyleGuide,
+      documentCustomSettings,
+    };
+    try {
+      localStorage.setItem(LOCAL_STORAGE_SETTINGS_KEY, JSON.stringify(settingsToSave));
+    } catch (e) {
+      console.error("Failed to save settings to localStorage", e);
+    }
+  }, [
+    persistedSettingsLoaded,
+    selectedLlmProvider,
+    azureOpenaiEndpoint,
+    azureOpenaiDeploymentName,
+    openaiModelName,
+    selectedDocumentTypeId,
+    useGrounding,
+    markdownStyleGuide,
+    generalWritingStyleGuide,
+    documentCustomSettings,
+  ]);
 
   const llmProviderOptions = Object.values(LlmProvider).map(provider => ({ value: provider, label: provider }));
   const documentTypeOptions = DOCUMENT_TYPES.map(docType => ({ value: docType.id, label: docType.name }));
@@ -67,8 +186,8 @@ const App: React.FC = () => {
   const constructPrompt = useCallback(() => {
     const selectedDocType = DOCUMENT_TYPES.find(dt => dt.id === selectedDocumentTypeId);
     if (!selectedDocType) return '';
-    const template = documentCustomSettings[selectedDocType.id]?.template || '';
-    const description = documentCustomSettings[selectedDocType.id]?.description || '';
+    const template = documentCustomSettings[selectedDocType.id]?.template || getDocumentTemplate(selectedDocType.id) || '';
+    const description = documentCustomSettings[selectedDocType.id]?.description || getDocumentDescription(selectedDocType.id) || '';
 
     return `
 You are an expert technical writer. Your task is to create and edit usage documentation for a developer audience.
@@ -180,40 +299,18 @@ Now, generate the complete Markdown document based on the above information.
 
   useEffect(() => {
     setApiKey('');
-    setAzureOpenaiEndpoint('');
-    setAzureOpenaiDeploymentName('');
-    setOpenaiModelName('');
-    setUseGrounding(false);
   }, [selectedLlmProvider]);
 
-   useEffect(() => {
-    if (DOCUMENT_TYPES.length > 0 && !selectedDocumentTypeId) {
-      setSelectedDocumentTypeId(DOCUMENT_TYPES[0].id);
-    }
-     setDocumentCustomSettings(prevSettings => {
-        const newSettings = { ...prevSettings };
-        let changed = false;
-        DOCUMENT_TYPES.forEach(docType => {
-            if (!newSettings[docType.id]) {
-                newSettings[docType.id] = {
-                    template: getDocumentTemplate(docType.id) || '',
-                    description: getDocumentDescription(docType.id) || '',
-                };
-                changed = true;
-            }
-        });
-        return changed ? newSettings : prevSettings;
-     });
-
-  }, [selectedDocumentTypeId]);
-
+  if (!persistedSettingsLoaded && DOCUMENT_TYPES.length === 0) {
+     return <div className="min-h-screen p-4 md:p-8 flex items-center justify-center">Loading settings...</div>;
+  }
 
   return (
     <div className="min-h-screen p-4 md:p-8">
       <header className="mb-10 text-center">
         <h1 className="text-4xl md:text-5xl font-bold text-sky-400">Tech Doc Assistant</h1>
         <p className="mt-3 text-lg text-[#A0AEC0] max-w-2xl mx-auto">
-          Let AI help you author clear, accurate, and findable tech docs for developers. Select a doc type, provide your draft, and let the LLM write the first draft.
+          Use AI help you author clear, accurate, and findable tech docs for developers. Select a doc type, provide your draft, and let the LLM handle the rest.
         </p>
       </header>
 
@@ -249,7 +346,7 @@ Now, generate the complete Markdown document based on the above information.
 
           <TextAreaInput
             id="draftContent"
-            label="2. Rought draft or existing content"
+            label="2. Rough draft or existing content"
             value={draftContent}
             onChange={(e) => setDraftContent(e.target.value)}
             placeholder="Paste or write your raw content, ideas, or notes here..."
@@ -280,7 +377,7 @@ Now, generate the complete Markdown document based on the above information.
         </section>
 
         <section className="bg-[#152B43] p-6 rounded-xl shadow-2xl md:sticky md:top-8 md:self-start" style={{maxHeight: 'calc(100vh - 4rem)', overflowY: 'auto'}}>
-           <h2 className="text-2xl font-semibold text-sky-400 mb-6 border-b border-[#2D3748] pb-3">Generated content</h2>
+            <h2 className="text-2xl font-semibold text-sky-400 mb-6 border-b border-[#2D3748] pb-3">Generated content</h2>
           {isLoading && (
             <div className="flex flex-col items-center justify-center h-64 text-[#A0AEC0]">
               <svg className="animate-spin h-12 w-12 text-sky-400 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -296,8 +393,8 @@ Now, generate the complete Markdown document based on the above information.
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-16 h-16 mb-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
               </svg>
-              <p className="text-lg">Your generated document will appear here.</p>
-              <p className="text-sm">Fill in the details on the left and click "Generate".</p>
+              <p className="text-lg">Your AI-generated doc will appear here.</p>
+              <p className="text-sm">Fill in the details on the left and click "Generate documentation".</p>
             </div>
           )}
           <MarkdownDisplay markdownContent={generatedMarkdown} fileName={getFileName()} />
@@ -331,14 +428,13 @@ Now, generate the complete Markdown document based on the above information.
       </main>
       <footer className="text-center mt-12 py-6 border-t border-[#2D3748]">
         <p className="text-sm text-[#A0AEC0]">
-          Developer documentation assistant &copy; {new Date().getFullYear()}. LLM integration by AI.
+          Tech Doc Assistant &copy; {new Date().getFullYear()}
         </p>
       </footer>
 
       <SettingsModal
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
-        // LLM & API Props
         selectedLlmProvider={selectedLlmProvider}
         onLlmProviderChange={(e) => setSelectedLlmProvider(e.target.value as LlmProvider)}
         apiKey={apiKey}
@@ -352,7 +448,6 @@ Now, generate the complete Markdown document based on the above information.
         useGrounding={useGrounding}
         onUseGroundingChange={(e) => setUseGrounding(e.target.checked)}
         llmProviderOptions={llmProviderOptions}
-        // Guides & Templates Props
         markdownStyleGuide={markdownStyleGuide}
         onMarkdownStyleGuideChange={(e) => setMarkdownStyleGuide(e.target.value)}
         generalWritingStyleGuide={generalWritingStyleGuide}

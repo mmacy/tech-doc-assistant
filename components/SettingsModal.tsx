@@ -296,7 +296,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   <>
                     <SelectInput
                       id="docTypeForGuidesModal"
-                      label="Select a doc type:"
+                      label="Doc type:"
                       value={selectedDocTypeForEditingGuides}
                       onChange={(e) => setSelectedDocTypeForEditingGuides(e.target.value)}
                       options={documentTypeOptionsForModal}
