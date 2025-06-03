@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { LlmProvider, DocumentType, AllDocumentTypeSettings, DocumentTypeSetting } from '../types';
 import {
@@ -47,7 +46,7 @@ interface SettingsModalProps {
   currentAppDocTypeId: string;
 }
 
-type ActiveTab = 'api' | 'guides';
+type ActiveTab = 'api' | 'globalStyle' | 'docStyles';
 
 const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
@@ -74,12 +73,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   documentTypes,
   currentAppDocTypeId,
 }) => {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('guides');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('globalStyle');
   const [selectedDocTypeForEditingGuides, setSelectedDocTypeForEditingGuides] = useState<string>(currentAppDocTypeId);
 
   useEffect(() => {
     if (isOpen) {
-      setActiveTab('guides');
+      setActiveTab('globalStyle'); // Default to 'Global style' tab
       if (documentTypes.find(dt => dt.id === currentAppDocTypeId)) {
         setSelectedDocTypeForEditingGuides(currentAppDocTypeId);
       } else if (documentTypes.length > 0) {
@@ -163,11 +162,18 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="border-b border-[#2D3748] mb-1">
               <nav className="-mb-px flex space-x-2" aria-label="Tabs">
               <button
-                  onClick={() => setActiveTab('guides')}
-                  className={`${tabBaseStyles} ${activeTab === 'guides' ? activeTabStyles : inactiveTabStyles}`}
-                  aria-current={activeTab === 'guides' ? 'page' : undefined}
+                  onClick={() => setActiveTab('globalStyle')}
+                  className={`${tabBaseStyles} ${activeTab === 'globalStyle' ? activeTabStyles : inactiveTabStyles}`}
+                  aria-current={activeTab === 'globalStyle' ? 'page' : undefined}
                 >
-                  Style guides
+                  Global style
+                </button>
+                <button
+                  onClick={() => setActiveTab('docStyles')}
+                  className={`${tabBaseStyles} ${activeTab === 'docStyles' ? activeTabStyles : inactiveTabStyles}`}
+                  aria-current={activeTab === 'docStyles' ? 'page' : undefined}
+                >
+                  Document types
                 </button>
                 <button
                   onClick={() => setActiveTab('api')}
@@ -245,9 +251,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
             )}
 
-            {activeTab === 'guides' && (
+            {activeTab === 'globalStyle' && (
               <div className="space-y-2 pt-4">
-                <h4 className="text-lg font-medium text-sky-300 border-b border-[#2D3748] pb-2 mb-3">Global style</h4>
+                {/* <h4 className="text-lg font-medium text-sky-300 border-b border-[#2D3748] pb-2 mb-3">Global style</h4> */}
 
                 <div className="mb-4">
                   <div className="flex justify-between items-center mb-1">
@@ -260,7 +266,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     label=""
                     value={generalWritingStyleGuide}
                     onChange={onGeneralWritingStyleGuideChange}
-                    rows={4}
+                    rows={6}
                     className="text-sm mt-0 mb-0"
                   />
                 </div>
@@ -276,12 +282,16 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     label=""
                     value={markdownStyleGuide}
                     onChange={onMarkdownStyleGuideChange}
-                    rows={4}
+                    rows={6}
                     className="text-sm mt-0 mb-0"
                   />
                 </div>
+              </div>
+            )}
 
-                <h4 className="text-lg font-medium text-sky-300 border-b border-[#2D3748] pb-2 my-3 pt-2">Doc styles</h4>
+            {activeTab === 'docStyles' && (
+              <div className="space-y-2 pt-4">
+                {/* <h4 className="text-lg font-medium text-sky-300 border-b border-[#2D3748] pb-2 my-3 pt-2">Doc styles</h4> */}
                 {documentTypes.length > 0 ? (
                   <>
                     <SelectInput
@@ -294,7 +304,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     />
                     <div className="mb-4">
                       <div className="flex justify-between items-center mb-1">
-                        <label htmlFor="docTypeTemplateModal" className="block text-sm font-medium text-[#E2E8F0]">{`Template: ${selectedDocTypeNameForLabel}`}</label>
+                        <label htmlFor="docTypeTemplateModal" className="block text-sm font-medium text-[#E2E8F0]">{`${selectedDocTypeNameForLabel} template`}</label>
                         <Button variant="secondary" className="text-xs px-2 py-1" onClick={() => document.getElementById('docTemplateFile')?.click()} disabled={!selectedDocTypeForEditingGuides}>Load from file</Button>
                         <input type="file" id="docTemplateFile" className="hidden" accept=".md,.txt" onChange={(e) => handleFileLoad(e, (content) => onDocumentTypeSettingChange(selectedDocTypeForEditingGuides, 'template', content))} />
                       </div>
@@ -310,7 +320,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
                     <div className="mb-4">
                       <div className="flex justify-between items-center mb-1">
-                        <label htmlFor="docTypeDescriptionModal" className="block text-sm font-medium text-[#E2E8F0]">{`Description: ${selectedDocTypeNameForLabel}`}</label>
+                        <label htmlFor="docTypeDescriptionModal" className="block text-sm font-medium text-[#E2E8F0]">{`${selectedDocTypeNameForLabel} description`}</label>
                         <Button variant="secondary" className="text-xs px-2 py-1" onClick={() => document.getElementById('docDescFile')?.click()} disabled={!selectedDocTypeForEditingGuides}>Load from file</Button>
                         <input type="file" id="docDescFile" className="hidden" accept=".md,.txt" onChange={(e) => handleFileLoad(e, (content) => onDocumentTypeSettingChange(selectedDocTypeForEditingGuides, 'description', content))} />
                       </div>
