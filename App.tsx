@@ -71,17 +71,19 @@ const App: React.FC = () => {
     const description = documentCustomSettings[selectedDocType.id]?.description || '';
 
     return `
-You are an expert technical writer assistant. Your task is to help a non-technical writer create developer documentation.
-Generate a complete and polished document in Markdown format.
+You are an expert technical writer. Your task is to create and edit usage documentation for a developer audience.
 
-**Key Instructions:**
-1.  **Adhere Strictly to Markdown Styling:** Follow all rules in the "MARKDOWN STYLING RULES" section below.
-2.  **Follow Writing Style:** Adhere to the "GENERAL WRITING STYLE GUIDE" provided.
-3.  **Use Provided Template:** Structure the document based on the "DOCUMENT STRUCTURE TEMPLATE" for the type: "${selectedDocType.name}".
-4.  **Incorporate User Draft:** Integrate the "USER'S DRAFT CONTENT" into the appropriate sections of the template.
-5.  **Apply Additional Instructions:** Consider any "USER'S ADDITIONAL INSTRUCTIONS".
-6.  **Fill Placeholders:** Replace placeholders like \`{{TITLE}}\`, \`{{CONCEPT_NAME}}\`, etc., in the template with relevant information derived from the user's draft or instructions. If information is missing, make reasonable inferences or state that information is needed.
-7.  **Output Format:** The entire output MUST be in valid Markdown. Do not include any conversational text before or after the Markdown document, nor enclose the output in \`\`\`markdown\`\`\` tags.
+Write a complete, polished technical document in Markdown format based on the provided draft and implementing the style and format guidance.
+
+**Key instructions:**
+
+1.  **Adhere strictly to Markdown styling:** Follow all rules in the "MARKDOWN STYLING RULES" section below.
+2.  **Follow writing style:** Adhere to the "GENERAL WRITING STYLE GUIDE" provided.
+3.  **Implement document template:** Structure the document as specified in "DOCUMENT STRUCTURE TEMPLATE" for the type: "${selectedDocType.name}".
+4.  **Incorporate draft:** Integrate the "USER'S DRAFT CONTENT" into the new document as specified by the template.
+5.  **Apply additional instructions:** Consider any "USER'S ADDITIONAL INSTRUCTIONS". If additional instructions were given, apply its guidance even if it conflicts with the template or other guidance.
+6.  **Fill placeholders:** Replace placeholders like \`{{TITLE}}\`, \`{{CONCEPT_NAME}}\`, etc., in the template with relevant information derived from the user's draft or instructions. If information is missing, make reasonable inferences or state that information is needed.
+7.  **Output format:** The entire output MUST be in valid Markdown. Do not include any conversational text before or after the Markdown document, nor enclose the output in \`\`\`markdown\`\`\` tags.
 
 ---
 **DOCUMENT TYPE DESCRIPTION: ${selectedDocType.name}**
@@ -98,7 +100,7 @@ ${draftContent}
 \`\`\`
 ---
 **USER'S ADDITIONAL INSTRUCTIONS (if any):**
-${additionalInstructions || "No additional instructions provided."}
+${additionalInstructions || "None given."}
 ---
 **MARKDOWN STYLING RULES:**
 ${markdownStyleGuide}
@@ -107,7 +109,7 @@ ${markdownStyleGuide}
 ${generalWritingStyleGuide}
 ---
 
-Now, generate the complete Markdown document based on all the above information.
+Now, generate the complete Markdown document based on the above information.
     `;
   }, [selectedDocumentTypeId, draftContent, additionalInstructions, markdownStyleGuide, generalWritingStyleGuide, documentCustomSettings]);
 
@@ -117,10 +119,10 @@ Now, generate the complete Markdown document based on all the above information.
       return;
     }
     if (!selectedDocumentTypeId && DOCUMENT_TYPES.length > 0) {
-        setError("Please select a document type.");
+        setError("Select a doc type.");
         return;
     } else if (DOCUMENT_TYPES.length === 0) {
-        setError("No document types are configured. Please check the application setup.");
+        setError("No document types are configured - check Settings.");
         return;
     }
 
@@ -131,7 +133,7 @@ Now, generate the complete Markdown document based on all the above information.
 
     const prompt = constructPrompt();
     if (!prompt) {
-      setError("Failed to construct prompt. Please check document type selection.");
+      setError("Failed to construct prompt - check document type selection.");
       setIsLoading(false);
       return;
     }
@@ -209,21 +211,21 @@ Now, generate the complete Markdown document based on all the above information.
   return (
     <div className="min-h-screen p-4 md:p-8">
       <header className="mb-10 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold text-sky-400">Developer documentation assistant</h1>
+        <h1 className="text-4xl md:text-5xl font-bold text-sky-400">Tech Doc Assistant</h1>
         <p className="mt-3 text-lg text-[#A0AEC0] max-w-2xl mx-auto">
-          Craft polished developer documentation with AI assistance. Select your LLM, provide your draft, and let the AI handle the rest.
+          Let AI help you author clear, accurate, and findable tech docs for developers. Select a doc type, provide your draft, and let the LLM write the first draft.
         </p>
       </header>
 
       <main className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
         <section className="bg-[#152B43] p-6 rounded-xl shadow-2xl">
           <div className="flex justify-between items-center mb-6 border-b border-[#2D3748] pb-3">
-            <h2 className="text-2xl font-semibold text-sky-400">Configuration & input</h2>
+            <h2 className="text-2xl font-semibold text-sky-400">Source content</h2>
             <Button
                 variant="secondary"
                 onClick={() => setIsSettingsModalOpen(true)}
                 className="px-3 py-2"
-                aria-label="Open LLM and API settings"
+                aria-label="Open LLM settings"
                 icon={<SettingsIcon className="w-5 h-5" />}
             >
                 Settings
@@ -240,14 +242,14 @@ Now, generate the complete Markdown document based on all the above information.
             />
           ) : (
             <div className="mb-4 p-3 bg-[#243B53] border border-[#4A5568] rounded-md">
-              <p className="text-sm font-medium text-[#E2E8F0] mb-1">1. Select document type</p>
+              <p className="text-sm font-medium text-[#E2E8F0] mb-1">1. Select a doc type</p>
               <p className="text-[#A0AEC0] text-sm">No document types configured.</p>
             </div>
           )}
 
           <TextAreaInput
             id="draftContent"
-            label="2. Your rough draft"
+            label="2. Rought draft or existing content"
             value={draftContent}
             onChange={(e) => setDraftContent(e.target.value)}
             placeholder="Paste or write your raw content, ideas, or notes here..."
@@ -260,7 +262,7 @@ Now, generate the complete Markdown document based on all the above information.
             label="3. Additional instructions (optional)"
             value={additionalInstructions}
             onChange={(e) => setAdditionalInstructions(e.target.value)}
-            placeholder="e.g., 'Focus on a beginner audience', 'Emphasize the security aspects', 'Target API version 2.1'"
+            placeholder="e.g. 'Focus on a beginner audience', 'Emphasize the security aspects', 'Target API version 2.1'"
             rows={4}
           />
 
@@ -270,7 +272,7 @@ Now, generate the complete Markdown document based on all the above information.
             disabled={isLoading || !draftContent.trim() || (DOCUMENT_TYPES.length > 0 && !selectedDocumentTypeId) || DOCUMENT_TYPES.length === 0}
             className="w-full mt-2 text-lg"
           >
-            {isLoading ? 'Generating...' : 'Generate Documentation'}
+            {isLoading ? 'Generating...' : 'Generate documentation'}
           </Button>
 
           {error && <p className="mt-4 text-sm text-red-400 bg-red-900/30 p-3 rounded-md">{error}</p>}
@@ -278,7 +280,7 @@ Now, generate the complete Markdown document based on all the above information.
         </section>
 
         <section className="bg-[#152B43] p-6 rounded-xl shadow-2xl md:sticky md:top-8 md:self-start" style={{maxHeight: 'calc(100vh - 4rem)', overflowY: 'auto'}}>
-           <h2 className="text-2xl font-semibold text-sky-400 mb-6 border-b border-[#2D3748] pb-3">Generated output</h2>
+           <h2 className="text-2xl font-semibold text-sky-400 mb-6 border-b border-[#2D3748] pb-3">Generated content</h2>
           {isLoading && (
             <div className="flex flex-col items-center justify-center h-64 text-[#A0AEC0]">
               <svg className="animate-spin h-12 w-12 text-sky-400 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -286,7 +288,7 @@ Now, generate the complete Markdown document based on all the above information.
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
               <p className="text-lg">Generating your document...</p>
-              <p className="text-sm">This may take a moment.</p>
+              <p className="text-sm">This might take a few minutes.</p>
             </div>
           )}
           {!isLoading && !generatedMarkdown && !error && (
