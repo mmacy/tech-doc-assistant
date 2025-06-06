@@ -30,7 +30,7 @@ const geminiService: LlmService & {
     prompt: string,
     useGrounding: boolean = false
   ): Promise<LlmServiceResponse> => {
-    const effectiveApiKey = apiKey || process.env.API_KEY;
+    const effectiveApiKey = apiKey || process.env.GEMINI_API_KEY;
     if (!effectiveApiKey) {
       throw new Error("API key for Google Gemini is not provided and not found in environment variables.");
     }

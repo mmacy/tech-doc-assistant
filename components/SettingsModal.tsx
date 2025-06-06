@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LlmProvider, DocumentType, AllDocumentTypeSettings, DocumentTypeSetting } from '../types';
 import {
   DEFAULT_OPENAI_API_KEY_PLACEHOLDER,
+  DEFAULT_GEMINI_API_KEY_PLACEHOLDER,
   DEFAULT_AZURE_OPENAI_API_KEY_PLACEHOLDER,
   DEFAULT_AZURE_OPENAI_ENDPOINT_PLACEHOLDER,
   DEFAULT_AZURE_OPENAI_DEPLOYMENT_NAME_PLACEHOLDER,
@@ -108,8 +109,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
   if (selectedLlmProvider === LlmProvider.GEMINI) {
     apiKeyLabel = "Google Gemini API key (optional)";
-    apiKeyPlaceholder = "Uses process.env.API_KEY if empty";
-    apiKeyHelpText = "If provided, this key is used. Otherwise, relies on a system-level API_KEY environment variable.";
+    apiKeyPlaceholder = DEFAULT_GEMINI_API_KEY_PLACEHOLDER;
+    apiKeyHelpText = "If provided, this key is used. Otherwise, relies on a system-level GEMINI_API_KEY environment variable.";
   } else if (selectedLlmProvider === LlmProvider.AZURE_OPENAI) {
     apiKeyLabel = "Azure OpenAI API key";
     apiKeyPlaceholder = DEFAULT_AZURE_OPENAI_API_KEY_PLACEHOLDER;

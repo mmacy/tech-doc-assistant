@@ -125,6 +125,9 @@ export const DOCUMENT_DESCRIPTIONS: Record<string, string> = {
   'concept': "An explanation of a key concept, technology, or architecture. Aim for clarity and understanding of its purpose and mechanics.",
 };
 
+export const DEFAULT_GEMINI_API_KEY_PLACEHOLDER =
+  "GEMINI_API_KEY_NOT_CONFIGURED (uses process.env.GEMINI_API_KEY if available)";
+
 export const DEFAULT_OPENAI_API_KEY_PLACEHOLDER = "OPENAI_API_KEY_NOT_CONFIGURED (uses process.env.OPENAI_API_KEY if available)";
 export const DEFAULT_AZURE_OPENAI_API_KEY_PLACEHOLDER = "AZURE_OPENAI_API_KEY_NOT_CONFIGURED (uses process.env.AZURE_OPENAI_API_KEY if available)";
 export const DEFAULT_AZURE_OPENAI_ENDPOINT_PLACEHOLDER = "AZURE_OPENAI_ENDPOINT_NOT_CONFIGURED (uses process.env.AZURE_OPENAI_ENDPOINT if available)";
