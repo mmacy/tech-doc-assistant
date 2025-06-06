@@ -38,6 +38,7 @@ Users can copy the generated Markdown or download it as a `.md` file.
     - Global Markdown styling rules and a general writing style guide.
     - All templates, descriptions, and guides are initially loaded from `src/constants.ts` but can be viewed and edited live within the application's settings modal for the current session. Users can also load content for these from local files directly into the settings modal.
 - **Markdown output**: Generates documents in Markdown format.
+- **Streaming output**: When supported by the selected provider, the generated document appears incrementally.
 - **Export options**: Features "Copy to clipboard" and "Download .md file" options for the generated content.
 - **User-friendly interface**: Built with React for a responsive and intuitive user experience, styled with Tailwind CSS.
 

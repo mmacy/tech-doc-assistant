@@ -26,10 +26,29 @@ const openaiService: LlmService = {
 
     try {
       console.log(`Using OpenAI with: Model='${modelName}'`);
-      const chatCompletion = await client.chat.completions.create({
+      const baseParams = {
         messages: [{ role: "user" as const, content: prompt }],
         model: modelName,
-      });
+      } as const;
+
+      if (options?.onStreamToken) {
+        const stream = await client.chat.completions.create({
+          ...baseParams,
+          stream: true,
+        });
+
+        let text = "";
+        for await (const chunk of stream) {
+          const token = chunk.choices[0]?.delta?.content;
+          if (token) {
+            text += token;
+            options.onStreamToken(token);
+          }
+        }
+        return { text };
+      }
+
+      const chatCompletion = await client.chat.completions.create(baseParams);
 
       const text = chatCompletion.choices[0]?.message?.content;
       if (typeof text !== 'string') {

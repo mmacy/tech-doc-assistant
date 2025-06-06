@@ -37,10 +37,30 @@ const azureOpenaiService: LlmService = {
     try {
       const messages = [{ role: "user" as const, content: prompt }];
       console.log(`Using Azure OpenAI with: Endpoint='${effectiveEndpoint}', Deployment='${deploymentName}'`);
-      const result = await client.chat.completions.create({
+
+      const baseParams = {
         model: deploymentName,
-        messages: messages,
-      });
+        messages,
+      } as const;
+
+      if (options?.onStreamToken) {
+        const stream = await client.chat.completions.create({
+          ...baseParams,
+          stream: true,
+        });
+
+        let text = "";
+        for await (const chunk of stream) {
+          const token = chunk.choices[0]?.delta?.content;
+          if (token) {
+            text += token;
+            options.onStreamToken(token);
+          }
+        }
+        return { text };
+      }
+
+      const result = await client.chat.completions.create(baseParams);
 
       const text = result.choices[0]?.message?.content;
       if (typeof text !== 'string') {
