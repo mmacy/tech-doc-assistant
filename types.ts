@@ -15,8 +15,9 @@ export interface DocumentType {
 export interface LlmServiceOptions {
   useGrounding?: boolean;
   azureEndpoint?: string;
-  azureDeploymentName?: string; 
+  azureDeploymentName?: string;
   openaiModelName?: string; // Added for OpenAI model selection
+  onStreamToken?: (token: string) => void; // Optional callback for streaming
 }
 
 export interface LlmServiceResponse {

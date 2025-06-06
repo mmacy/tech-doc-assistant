@@ -269,6 +269,10 @@ Now, generate the complete Markdown document based on the above information.
       llmOptions.openaiModelName = openaiModelName || process.env.OPENAI_MODEL_NAME || OPENAI_MODEL_NAME;
     }
 
+    llmOptions.onStreamToken = (token: string) => {
+      setGeneratedMarkdown(prev => prev + token);
+    };
+
     try {
       const { text, groundingChunks } = await llmGenerateDocumentation(
         selectedLlmProvider,
